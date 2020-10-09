@@ -15,7 +15,7 @@ int argc_number = 0;
 int mode_flag = 0;
 int total_syscalled = 0;
 char* program;
-char* program_args[2];
+char* program_args[20];
 struct syscall_struct {
     int id;
     char* name;
@@ -23,11 +23,11 @@ struct syscall_struct {
 };
 struct syscall_struct syscall_array[MAX_SYSCALL_NUM];
 
+
 //Func Declaration
 void start_syscall_array();
 void sys_call_counter(int syscall_id);
-void flag_check(char* argv[]);
-void initialize_program_args();
+void parse_arguments(char* argv[]);
 void print_table();
 void print_syscall(int id);
 
@@ -35,10 +35,9 @@ int main(int argc, char *argv[]){
 
     argc_number = argc;
 
-    initialize_program_args();
     start_syscall_array();
     //manage_arguments(argv);
-    flag_check(argv);
+    parse_arguments(argv);
 
 
     int status;
@@ -55,6 +54,8 @@ int main(int argc, char *argv[]){
         //Child Process
 		printf("The program 'to execute is '%s'\n", program);
         printf(" ____________PROCESS START____________ \n");
+        if (!mode_flag)
+            printf("|=ID==========NAME======CALL INSTANCE=|\n");
         ptrace(PTRACE_TRACEME, 0, NULL, NULL);
         execvp(program, program_args);
     } else{ 
@@ -80,7 +81,6 @@ int main(int argc, char *argv[]){
                 //#mode_flag = 0 INTERACTIVO
 				if (mode_flag == 0) {
 					//print_sys_call_info(sys_call_id);
-                    printf("SYSCALL CALLED, ID: %ld \n",sys_call_id);
                     print_syscall(sys_call_id);
 					
 				}
@@ -101,13 +101,16 @@ int main(int argc, char *argv[]){
 
 
 void start_syscall_array(){
-    for(int i=0; i<MAX_SYSCALL_NUM; i++){
-        struct syscall_struct syscall_element;
-        syscall_element.id = i;
-        syscall_element.name = "SYSCALLNAME";
-        syscall_element.times_called = 0;
-        syscall_array[i] = syscall_element;
-    }
+  FILE* fd = fopen("syscall.tbl", "r");
+  size_t len;
+  for (int i = 0; i < MAX_SYSCALL_NUM; i++) {
+    struct syscall_struct syscall_element;
+    syscall_array[i].id = i;
+    getline(&syscall_array[i].name, &len, fd);
+    size_t last_idx = strlen(syscall_array[i].name) - 1;
+    syscall_array[i].name[last_idx] = '\0';
+    syscall_array[i].times_called = 0;
+  }
 }
 
 void sys_call_counter(int syscall_id){
@@ -115,34 +118,31 @@ void sys_call_counter(int syscall_id){
     syscall_array[syscall_id].times_called++;
 }
 
-void flag_check(char* argv[]){
+void parse_arguments(char* argv[]){
     //Flag -i #mode_flag = 0
-	if (!strcmp(argv[1],"-i")) {
-		printf("Modo Interactivo\n");
-		mode_flag = 0;
-		program = argv[2];
-	}
-    //Flag -a #mode_flag = 1
-	else if (!strcmp(argv[1],"-a")) { 
-		printf("Modo Automatico\n");
-		mode_flag = 1;
-		program = argv[2];
-	}
-	else{
-		printf("Modo no encontrado\n Utilizando modo interactivo por defecto\n");
-        mode_flag = 0;
-		program = argv[1];
-	}
-    program_args[0] = program; //___________________
+    int program_index = 2;
+    if (!strcmp(argv[1], "-i")) {
+      printf("Modo Interactivo\n");
+      mode_flag = 0;
+      program = argv[2];
+    }
+    // Flag -a #mode_flag = 1
+    else if (!strcmp(argv[1], "-a")) {
+      printf("Modo Automatico\n");
+      mode_flag = 1;
+      program = argv[2];
+
+    } else {
+      printf("Modo no encontrado\n Utilizando modo interactivo por defecto\n");
+      mode_flag = 0;
+      program = argv[1];
+      program_index = 1;
+    }
+    for (int i = 0; i + program_index < argc_number; i++)
+      program_args[i] = argv[program_index+i]; 
 }
 
-void initialize_program_args(){
-	//for(int i = 1; i < 20; i++){
-		//program_args[i] = "";
-        program_args[0] = "";
-        program_args[1] = NULL;
-	//}
-}
+
 
 void print_table(){
     printf("\n ____________SYSCALL TABLE____________ \n");
