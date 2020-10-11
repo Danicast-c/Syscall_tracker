@@ -7,10 +7,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-// Const Declaration
+// Constant declaration
 #define MAX_SYSCALL_NUM 334
 
-// Var Declaration
+// Global variable declaration
 int argc_number = 0;
 int mode_flag = 0;
 int total_syscalled = 0;
@@ -24,7 +24,7 @@ struct syscall_struct {
 };
 struct syscall_struct syscall_array[MAX_SYSCALL_NUM];
 
-// Func Declaration
+// Function forward declaration
 void start_syscall_array();
 void sys_call_counter(int syscall_id);
 void parse_arguments(char* argv[]);
@@ -35,7 +35,6 @@ int main(int argc, char* argv[]) {
   argc_number = argc;
 
   start_syscall_array();
-  // manage_arguments(argv);
   parse_arguments(argv);
 
   int status;
@@ -49,7 +48,7 @@ int main(int argc, char* argv[]) {
     perror("PID ERROR");
     abort();
   } else if (pid_child == 0) {
-    // Child Process
+    // The process in execution is the child
     printf("The program to execute is '%s'", program);
     if (program_index + 1 < argc_number) {
       printf(" with args ");
@@ -65,12 +64,12 @@ int main(int argc, char* argv[]) {
 
     execvp(program, program_args);
   } else {
-    // Main Process
+    // The process in execution is the parent
     while (1) {
-      // Check change on program status
+      // Check for a change on program status
       waitpid(pid_child, &status, 0);
 
-      // Check finished process
+      // Check if the process is process
       if (WIFEXITED(status) || WIFSIGNALED(status)) {
         break;
       }
@@ -91,7 +90,6 @@ int main(int argc, char* argv[]) {
 
         //#mode_flag = 0 INTERACTIVO
         if (mode_flag == 0) {
-          // print_sys_call_info(sys_call_id);
           print_syscall(sys_call_id);
         }
 
@@ -99,9 +97,9 @@ int main(int argc, char* argv[]) {
         sys_called = 0;
       }
       ptrace(PTRACE_SYSCALL, pid_child, NULL,
-             NULL);  // Restart the the process with pid child_pid
+             NULL);  // Restart the syscall tracing process on pid child_pid
     }
-    // End of process
+    // Child process has finnished
     printf(" _____________PROCESS END_____________ \n");
     if (mode_flag == 1) {
       print_table();
