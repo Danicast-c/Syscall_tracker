@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 int main(int argc, char const *argv[])
 {
-  int i = 0;
-  free(&i);
-  i;
+  printf("Now doing a division by zero\n");
+  int one = 1;
+  int zero = 0;
+  printf("1/0 = %d\n", one / zero);
   return 0;
 }
