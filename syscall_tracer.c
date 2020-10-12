@@ -60,7 +60,6 @@ int main(int argc, char* argv[]) {
     printf(" ____________PROCESS START____________ \n");
     if (!mode_flag) printf("|=ID==========NAME======CALL INSTANCE=|\n");
     ptrace(PTRACE_TRACEME, 0, NULL, NULL);
-    ptrace(PTRACE_SYSCALL, pid_child, NULL, NULL);
 
     execvp(program, program_args);
   } else {
@@ -113,7 +112,6 @@ void start_syscall_array() {
   FILE* fd = fopen("syscall.tbl", "r");
   size_t len;
   for (int i = 0; i < MAX_SYSCALL_NUM; i++) {
-    struct syscall_struct syscall_element;
     syscall_array[i].id = i;
     getline(&syscall_array[i].name, &len, fd);
     size_t last_idx = strlen(syscall_array[i].name) - 1;

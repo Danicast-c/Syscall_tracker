@@ -1,4 +1,4 @@
 
 .vscode/c_cpp_properties.json
-main
+syscall_tracer
 *call_test
